@@ -1,5 +1,5 @@
-creversi: 高速なPythonのリバーシライブラリ
-==========================================
+creversi: 高速な Pure-Python のリバーシライブラリ
+==================================================
 .. image:: https://img.shields.io/pypi/v/creversi.svg
     :target: https://pypi.python.org/pypi/creversi
     :alt: PyPI package
@@ -7,8 +7,21 @@ creversi: 高速なPythonのリバーシライブラリ
 概要
 ----
 
-creversiは、盤面管理、合法手生成、および機械学習向けのサポートを備えた高速なPythonのリバーシライブラリです。
-以下は、盤を作成して、開始局面で合法手を生成して表示し、1手打つ処理の例です。
+creversi は、盤面管理、合法手生成、機械学習向けのサポートを備えた高速な
+リバーシ／オセロ向け Python ライブラリです。
+
+**v0.1.0 から、本ライブラリは Cython + AVX2 C++ 実装から純粋な Python 実装に
+移行しました。** これにより以下のメリットがあります。
+
+* C/C++ コンパイラ不要（pip install で即インストール）
+* Linux / macOS / Windows ですべて動作
+* オプションで ``numba`` を入れると、バッチ処理が AVX2 実装に匹敵する速度に
+* 元の API は完全互換 — 既存コードはそのまま動きます
+
+旧 C++ ソースは互換のため ``legacy_cpp/`` 以下に保存されていますが、ビルドは
+されません。
+
+以下は、盤を作成して、開始局面で合法手を生成して表示し、1 手打つ処理の例です。
 
 .. code:: python
 
@@ -33,15 +46,13 @@ creversiは、盤面管理、合法手生成、および機械学習向けのサ
 機能
 ----
 
-* Python 3.5以上とCython 0.29以上をサポート
+* Python 3.8 以上をサポート（Cython は不要）
 
-* IPython/Jupyter Notebookと統合
+* IPython/Jupyter Notebook と統合
 
   .. code:: python
 
       >>> board
-
-  .. image:: https://raw.githubusercontent.com/wiki/TadaoYamaoka/creversi/images/board.svg?sanitize=true
 
   直前の手をハイライトして表示する場合
 
@@ -49,8 +60,6 @@ creversiは、盤面管理、合法手生成、および機械学習向けのサ
 
       >>> move = creversi.move_from_str('c3')
       >>> board.to_svg(move)
-
-  .. image:: https://raw.githubusercontent.com/wiki/TadaoYamaoka/creversi/images/board2.svg?sanitize=true
 
 * テキスト形式で盤面を表示
 
@@ -74,17 +83,16 @@ creversiは、盤面管理、合法手生成、および機械学習向けのサ
 
 * 打ち手の表現
 
-  打ち手は0から64の数値で扱う。座標a1が0、b1が1、…、h8が63になり、パスが64になる。ヘルパー関数で文字列形式に変換できる。
+  打ち手は 0 から 64 の数値で扱う。座標 a1 が 0、b1 が 1、…、h8 が 63 になり、
+  パスが 64 になる。ヘルパー関数で文字列形式に変換できる。
 
   .. code:: python
 
       >>> move = list(board.legal_moves)[0]
-      >>> move
-      9
       >>> creversi.move_to_str(move)
       'b2'
 
-  文字列形式から数値の打ち手に変換できる。パスを表す文字列は、'pass'となる。
+  文字列形式から数値の打ち手に変換できる。パスを表す文字列は ``pass`` となる。
 
   .. code:: python
 
@@ -93,22 +101,13 @@ creversiは、盤面管理、合法手生成、および機械学習向けのサ
 
 * 打つ
 
-  数値の打ち手を使う場合
-
   .. code:: python
 
       >>> move = creversi.move_from_str('d3')
       >>> board.move(move)
-
-  文字列を直接の打ち手に使う場合
-
-  .. code:: python
-
       >>> board.move_from_str('d3')
 
 * 合法手生成
-
-  合法手生成は、Pythonのイテレータで取得する。
 
   .. code:: python
 
@@ -117,16 +116,12 @@ creversiは、盤面管理、合法手生成、および機械学習向けのサ
 
 * 合法手チェック
 
-  手が合法かどうかチェックする。
-
   .. code:: python
 
       >>> board.is_legal(move)
       False
 
-* 手番の表現
-
-  手番はbool型で黒番かどうかを表す。黒番、白番はそれぞれ定数BLACK_TURN、WHITE_TURNで定義されている。
+* 手番の表現 (黒番=True / 白番=False)
 
   .. code:: python
 
@@ -144,100 +139,48 @@ creversiは、盤面管理、合法手生成、および機械学習向けのサ
 
 * 局面の文字列形式
 
-  局面を文字列として取得、設定することができる。
-
   .. code:: python
 
       >>> line = board.to_line()
-      >>> line
-      '------------------OOO------OXX----OOXX----OX--------------------'
-
       >>> board.set_line('------------------OOO------OXX----OOXX----OX--------------------', creversi.BLACK_TURN)
 
-  コンストラクタでも初期化可能
-
-  .. code:: python
-
-      >>> board = creversi.Board('------------------OOO------OXX----OOXX----OX--------------------', creversi.BLACK_TURN)
-
 * 石の数の取得
-
-  石の合計
 
   .. code:: python
 
       >>> board.piece_sum()
-
-  手番側の石の数
-
-  .. code:: python
-
-      >>> board.piece_num()
-
-  相手番側の石の数
-
-  .. code:: python
-
-      >>> board.opponent_piece_num()
-
-  手番側から見た石の差
-
-  .. code:: python
-
-      >>> board.diff_num()
-
-  置ける石の数
-
-  .. code:: python
-
+      >>> board.piece_num()           # 手番側
+      >>> board.opponent_piece_num()  # 相手番側
+      >>> board.diff_num()            # 手番側から見た差
       >>> board.puttable_num()
-
-  相手の置ける石の数
-
-  .. code:: python
-
       >>> board.opponent_puttable_num()
 
-* 局面のビットボード形式
-
-  局面をビットボードとして取得、設定することができる。
+* 局面のビットボード形式 (16 byte = uint64 x 2)
 
   .. code:: python
 
       >>> import numpy as np
-
       >>> bitboard = np.empty(1, creversi.dtypeBitboard)
       >>> board.to_bitboard(bitboard)
-
       >>> board.set_bitboard(bitboard, creversi.BLACK_TURN)
 
-* 局面の2次元ベクトル表現
+* 局面の 2 次元ベクトル表現
 
-  石のある位置を1、それ以外を0とした2次元ベクトルを、手番側の石と相手番の石の2チャンネルで表現したものをNCHW形式のndarrayで取得できる。
-  畳み込み層への入力とすることができる。
+  石のある位置を 1、それ以外を 0 とした 2 次元ベクトルを、手番側／相手番の 2
+  チャンネルで NCHW 形式の ndarray として取得できる。
 
   .. code:: python
 
       >>> import numpy as np
-
-      >>> planes = np.empty(1, np.empty((1, 2, 8, 8), dtype=np.float32))
+      >>> planes = np.empty((1, 2, 8, 8), dtype=np.float32)
       >>> board.piece_planes(planes[0])
-
-  2次元ベクトルを90°、180°、270°回転したものも取得できる。
-
-  .. code:: python
-
       >>> board.piece_planes_rotate90(planes[0])
       >>> board.piece_planes_rotate180(planes[0])
       >>> board.piece_planes_rotate270(planes[0])
 
 * 機械学習向け訓練データ形式
 
-  機械学習向け訓練データ形式をサポートする。
-
   .. code:: python
-
-      >>> import numpy as np
 
       >>> data = np.empty(1, creversi.TrainingData)
       >>> board.to_bitboard(data['bitboard'])
@@ -246,66 +189,72 @@ creversiは、盤面管理、合法手生成、および機械学習向けのサ
       >>> data['reward'] = 1
       >>> data['done'] = False
 
-* Gym環境
-
-  OpenAI Gymのインターフェースをサポートする。
+* Gym 環境
 
   .. code:: python
 
       >>> import gym
       >>> import creversi.gym_reversi
-
       >>> env = gym.make('Reversi-v0').unwrapped
-
       >>> env.reset()
-      >>> env.board
       >>> next_board, reward, done, _ = env.step(move)
 
-  環境の並列実行バージョンを提供する。
+  並列実行バージョン (NumPy ベース、Numba があれば JIT)
 
   .. code:: python
 
-      >>> import gym
-      >>> from creversi.gym_reversi.envs import ReversiVecEnv
-
-      >>> BATCH_SIZE = 8
-      >>> vecenv = ReversiVecEnv(BATCH_SIZE)
-
-      >>> board0 = vecenv.envs[0].board
+      >>> from creversi.gym_reversi.envs import ReversiVecEnvFast
+      >>> vecenv = ReversiVecEnvFast(num_envs=1024)
       >>> rewards, dones = vecenv.step(moves)
 
 インストール
 ------------
 
-以下のコマンドでインストールします。インストールにはCythonと対応したC++コンパイラが必要です。
-
-::
-
-    pip install git+https://github.com/TadaoYamaoka/creversi
-
-* PYPIからインストール
+PyPI からインストール
 
 ::
 
     pip install creversi
 
-pipのバージョン19.0以上が必要です。19.0未満の場合は、事前にpipの
-`アップグレード <https://pip.pypa.io/en/stable/installing/#upgrading-pip>`_
-が必要です。
+NumPy バッチ処理を Numba JIT で高速化する場合 (推奨)
 
-インストールに失敗して、再実行する際は、--no-cache-dirオプションを付けて実行してください。
 ::
 
-    pip install --no-cache-dir creversi
+    pip install "creversi[fast]"
+
+Gym 統合を使う場合
+
+::
+
+    pip install "creversi[gym]"
+
+GitHub からのインストール
+
+::
+
+    pip install git+https://github.com/TadaoYamaoka/creversi
+
+パフォーマンスについて
+----------------------
+
+純 Python 実装は、AVX2 を使っていた C++ 実装に比べて単発呼び出しでは
+20〜100 倍程度遅くなりますが、自己対局／RL データ生成のような
+バッチ処理では、NumPy + Numba の構成で AVX2 とほぼ同等の速度が出ます。
+
+実測例（参考値、64-bit Linux）::
+
+    Pure-Python mobility    : ~220K ops/sec   (4.6 us/op)
+    Pure-Python Board.move  : ~225K ops/sec   (4.4 us/op)
+    NumPy batched mobility  : ~6M  ops/sec
+    Numba batched mobility  : ~170M ops/sec   (5.7 ns/board, B=1024)
 
 謝辞
 ----
 
-高速化のために多くの部分で
-`issen <https://github.com/primenumber/issen>`_
-のソースを流用しています。
+ビット盤の高速化アルゴリズムは
+`issen <https://github.com/primenumber/issen>`_ を参考にしています。
 
 ライセンス
 ----------
 
-creversiはGPL3の元にライセンスされています。詳細はLICENSEを確認してください。
+creversi は GPL3 の元にライセンスされています。詳細は LICENSE を確認してください。
