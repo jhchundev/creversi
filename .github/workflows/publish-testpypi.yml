@@ -1,8 +1,13 @@
 name: Publish to TestPyPI
 
-# Manual dry-run publish to https://test.pypi.org so you can validate the
-# build before cutting a real Release. Trigger via the Actions tab
-# (Run workflow). Uses Trusted Publishing — register a publisher at
+# Publishes a pre-release build to https://test.pypi.org so you can
+# validate it before cutting a stable release.
+#
+# Trigger: pushing a pre-release tag like `v0.1.0-rc1`, `v0.2.0-test1`,
+# `v1.0.0-beta3`, etc. (anything matching `v*-*`). Stable tags such as
+# `v0.1.0` are handled by `publish.yml` and ignored here.
+#
+# Uses Trusted Publishing — register a publisher at
 # https://test.pypi.org/manage/account/publishing/ with:
 #   owner:       jhchundev
 #   repository:  creversi
@@ -12,10 +17,16 @@ name: Publish to TestPyPI
 #
 # Install a published test build with:
 #   pip install --index-url https://test.pypi.org/simple/ \
-#               --extra-index-url https://pypi.org/simple/ creversi
+#               --extra-index-url https://pypi.org/simple/ creversi-python
+#
+# To cut a pre-release:
+#     git tag v0.1.1-rc1
+#     git push origin v0.1.1-rc1
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v*-*'
 
 jobs:
   build:
@@ -23,6 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history + tags so setuptools_scm can derive the version
 
       - uses: actions/setup-python@v5
         with:

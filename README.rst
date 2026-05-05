@@ -1,27 +1,37 @@
-creversi: 高速な Pure-Python のリバーシライブラリ
-==================================================
-.. image:: https://img.shields.io/pypi/v/creversi.svg
-    :target: https://pypi.python.org/pypi/creversi
+creversi: a fast pure-Python Reversi library
+============================================
+.. image:: https://img.shields.io/pypi/v/creversi-python.svg
+    :target: https://pypi.python.org/pypi/creversi-python
     :alt: PyPI package
+.. image:: https://img.shields.io/pypi/pyversions/creversi-python.svg
+    :target: https://pypi.python.org/pypi/creversi-python
+    :alt: Supported Python versions
+.. image:: https://img.shields.io/pypi/l/creversi-python.svg
+    :target: https://pypi.python.org/pypi/creversi-python
+    :alt: License
 
-概要
-----
+Overview
+--------
 
-creversi は、盤面管理、合法手生成、機械学習向けのサポートを備えた高速な
-リバーシ／オセロ向け Python ライブラリです。
+creversi is a fast Python library for Reversi/Othello with board management,
+legal-move generation, and machine-learning friendly utilities.
 
-**v0.1.0 から、本ライブラリは Cython + AVX2 C++ 実装から純粋な Python 実装に
-移行しました。** これにより以下のメリットがあります。
+**Starting with v0.1.0, this library has been migrated from a Cython + AVX2
+C++ implementation to a pure-Python implementation.** This brings several
+benefits:
 
-* C/C++ コンパイラ不要（pip install で即インストール）
-* Linux / macOS / Windows ですべて動作
-* オプションで ``numba`` を入れると、バッチ処理が AVX2 実装に匹敵する速度に
-* 元の API は完全互換 — 既存コードはそのまま動きます
+* No C/C++ compiler required (installs directly via ``pip install``).
+* Works on Linux, macOS, and Windows.
+* Optionally install ``numba`` to speed batched operations up to AVX2-class
+  performance.
+* Fully API-compatible with the previous release — existing code keeps
+  working.
 
-旧 C++ ソースは互換のため ``legacy_cpp/`` 以下に保存されていますが、ビルドは
-されません。
+The original C++ sources are preserved under ``legacy_cpp/`` for reference
+but are no longer built.
 
-以下は、盤を作成して、開始局面で合法手を生成して表示し、1 手打つ処理の例です。
+The example below creates a board, lists the legal moves at the opening
+position, and plays one move:
 
 .. code:: python
 
@@ -43,25 +53,25 @@ creversi は、盤面管理、合法手生成、機械学習向けのサポー�
 
     >>> board.move_from_str('d3')
 
-機能
-----
+Features
+--------
 
-* Python 3.8 以上をサポート（Cython は不要）
+* Supports Python 3.8+ (no Cython required).
 
-* IPython/Jupyter Notebook と統合
+* IPython / Jupyter Notebook integration.
 
   .. code:: python
 
       >>> board
 
-  直前の手をハイライトして表示する場合
+  Highlight the most recent move:
 
   .. code:: python
 
       >>> move = creversi.move_from_str('c3')
       >>> board.to_svg(move)
 
-* テキスト形式で盤面を表示
+* Render the board as text.
 
   .. code:: python
 
@@ -81,10 +91,11 @@ creversi は、盤面管理、合法手生成、機械学習向けのサポー�
         7|........
         8|........
 
-* 打ち手の表現
+* Move encoding.
 
-  打ち手は 0 から 64 の数値で扱う。座標 a1 が 0、b1 が 1、…、h8 が 63 になり、
-  パスが 64 になる。ヘルパー関数で文字列形式に変換できる。
+  Moves are integers from 0 to 64. Square ``a1`` is 0, ``b1`` is 1, …,
+  ``h8`` is 63, and 64 means "pass". Helper functions convert to and from
+  the string form.
 
   .. code:: python
 
@@ -92,14 +103,14 @@ creversi は、盤面管理、合法手生成、機械学習向けのサポー�
       >>> creversi.move_to_str(move)
       'b2'
 
-  文字列形式から数値の打ち手に変換できる。パスを表す文字列は ``pass`` となる。
+  String form back to integer; ``'pass'`` represents a pass.
 
   .. code:: python
 
       >>> creversi.move_from_str('b2')
       9
 
-* 打つ
+* Play a move.
 
   .. code:: python
 
@@ -107,21 +118,21 @@ creversi は、盤面管理、合法手生成、機械学習向けのサポー�
       >>> board.move(move)
       >>> board.move_from_str('d3')
 
-* 合法手生成
+* Legal-move generation.
 
   .. code:: python
 
       >>> for move in board.legal_moves:
       ...     print(creversi.move_to_str(move))
 
-* 合法手チェック
+* Legality check.
 
   .. code:: python
 
       >>> board.is_legal(move)
       False
 
-* 手番の表現 (黒番=True / 白番=False)
+* Side to move (Black = ``True``, White = ``False``).
 
   .. code:: python
 
@@ -130,32 +141,32 @@ creversi は、盤面管理、合法手生成、機械学習向けのサポー�
       >>> board.turn == creversi.WHITE_TURN
       False
 
-* 終局判定
+* Game-over detection.
 
   .. code:: python
 
       >>> board.is_game_over()
       False
 
-* 局面の文字列形式
+* Position string format.
 
   .. code:: python
 
       >>> line = board.to_line()
       >>> board.set_line('------------------OOO------OXX----OOXX----OX--------------------', creversi.BLACK_TURN)
 
-* 石の数の取得
+* Piece counts.
 
   .. code:: python
 
       >>> board.piece_sum()
-      >>> board.piece_num()           # 手番側
-      >>> board.opponent_piece_num()  # 相手番側
-      >>> board.diff_num()            # 手番側から見た差
+      >>> board.piece_num()           # side to move
+      >>> board.opponent_piece_num()  # opponent
+      >>> board.diff_num()            # difference from the side-to-move's perspective
       >>> board.puttable_num()
       >>> board.opponent_puttable_num()
 
-* 局面のビットボード形式 (16 byte = uint64 x 2)
+* Bitboard representation (16 bytes = ``uint64`` x 2).
 
   .. code:: python
 
@@ -164,10 +175,10 @@ creversi は、盤面管理、合法手生成、機械学習向けのサポー�
       >>> board.to_bitboard(bitboard)
       >>> board.set_bitboard(bitboard, creversi.BLACK_TURN)
 
-* 局面の 2 次元ベクトル表現
+* 2-D plane representation.
 
-  石のある位置を 1、それ以外を 0 とした 2 次元ベクトルを、手番側／相手番の 2
-  チャンネルで NCHW 形式の ndarray として取得できる。
+  Returns an ``ndarray`` in NCHW format with two channels (side to move
+  and opponent), where occupied squares are 1 and the rest are 0.
 
   .. code:: python
 
@@ -178,7 +189,7 @@ creversi は、盤面管理、合法手生成、機械学習向けのサポー�
       >>> board.piece_planes_rotate180(planes[0])
       >>> board.piece_planes_rotate270(planes[0])
 
-* 機械学習向け訓練データ形式
+* Training-data layout for machine learning.
 
   .. code:: python
 
@@ -189,7 +200,7 @@ creversi は、盤面管理、合法手生成、機械学習向けのサポー�
       >>> data['reward'] = 1
       >>> data['done'] = False
 
-* Gym 環境
+* Gym environment.
 
   .. code:: python
 
@@ -199,7 +210,7 @@ creversi は、盤面管理、合法手生成、機械学習向けのサポー�
       >>> env.reset()
       >>> next_board, reward, done, _ = env.step(move)
 
-  並列実行バージョン (NumPy ベース、Numba があれば JIT)
+  Vectorized version (NumPy-based, JIT-compiled if Numba is installed):
 
   .. code:: python
 
@@ -207,54 +218,54 @@ creversi は、盤面管理、合法手生成、機械学習向けのサポー�
       >>> vecenv = ReversiVecEnvFast(num_envs=1024)
       >>> rewards, dones = vecenv.step(moves)
 
-インストール
+Installation
 ------------
 
-PyPI からインストール
+Install from PyPI:
 
 ::
 
-    pip install creversi
+    pip install creversi-python
 
-NumPy バッチ処理を Numba JIT で高速化する場合 (推奨)
-
-::
-
-    pip install "creversi[fast]"
-
-Gym 統合を使う場合
+Accelerate the NumPy batched path with the Numba JIT (recommended):
 
 ::
 
-    pip install "creversi[gym]"
+    pip install "creversi-python[fast]"
 
-GitHub からのインストール
+With Gym integration:
 
 ::
 
-    pip install git+https://github.com/TadaoYamaoka/creversi
+    pip install "creversi-python[gym]"
 
-パフォーマンスについて
-----------------------
+Install from GitHub:
 
-純 Python 実装は、AVX2 を使っていた C++ 実装に比べて単発呼び出しでは
-20〜100 倍程度遅くなりますが、自己対局／RL データ生成のような
-バッチ処理では、NumPy + Numba の構成で AVX2 とほぼ同等の速度が出ます。
+::
 
-実測例（参考値、64-bit Linux）::
+    pip install git+https://github.com/jhchundev/creversi
+
+Performance
+-----------
+
+The pure-Python implementation is roughly 20–100x slower than the original
+AVX2 C++ implementation for single-call usage, but the NumPy + Numba batched
+path matches AVX2 for workloads such as self-play and RL data generation.
+
+Indicative measurements (64-bit Linux)::
 
     Pure-Python mobility    : ~220K ops/sec   (4.6 us/op)
     Pure-Python Board.move  : ~225K ops/sec   (4.4 us/op)
     NumPy batched mobility  : ~6M  ops/sec
     Numba batched mobility  : ~170M ops/sec   (5.7 ns/board, B=1024)
 
-謝辞
-----
+Acknowledgements
+----------------
 
-ビット盤の高速化アルゴリズムは
-`issen <https://github.com/primenumber/issen>`_ を参考にしています。
+The bitboard fast-move algorithm is based on
+`issen <https://github.com/primenumber/issen>`_.
 
-ライセンス
-----------
+License
+-------
 
-creversi は GPL3 の元にライセンスされています。詳細は LICENSE を確認してください。
+creversi is licensed under GPL-3.0. See ``LICENSE`` for details.
