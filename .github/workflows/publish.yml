@@ -1,13 +1,18 @@
 name: Publish to PyPI
 
-# Builds a single universal wheel + sdist for the pure-Python `creversi`
-# package and uploads it to PyPI when a GitHub Release is published.
+# Builds a single universal wheel + sdist for the pure-Python
+# `creversi-python` package and uploads it to PyPI when a release tag is
+# pushed.
+#
+# Trigger: pushing a tag like `v0.1.0`, `v1.2.3`, etc. Pre-release tags
+# (e.g. `v0.1.0-rc1`) are intentionally ignored — those are handled by
+# `publish-testpypi.yml`.
 #
 # Authentication uses PyPI Trusted Publishing (OIDC) — no API tokens or
 # passwords are stored as repository secrets. To enable it once:
-#   1. Create the project on PyPI (or reserve the name with a manual upload).
-#   2. On https://pypi.org/manage/account/publishing/ add a "pending" or
-#      existing publisher with:
+#   1. Create the project on PyPI (`creversi-python`) or reserve the name
+#      via a manual upload / pending publisher.
+#   2. On https://pypi.org/manage/account/publishing/ add a publisher with:
 #        owner:       jhchundev
 #        repository:  creversi
 #        workflow:    publish.yml
@@ -15,8 +20,10 @@ name: Publish to PyPI
 #   3. In this repo, create a GitHub Environment named `pypi`
 #      (Settings -> Environments -> New environment).
 #
-# To cut a release: bump `version` in pyproject.toml, tag (e.g. v0.1.1),
-# and publish a GitHub Release pointing at that tag.
+# To cut a release: bump `version` in `pyproject.toml` and `setup.py`,
+# commit, then:
+#     git tag v0.1.1
+#     git push origin v0.1.1
 #
 # Fallback (API token) — if you prefer not to use Trusted Publishing,
 # delete the `permissions:` and `environment:` blocks and replace the
@@ -25,9 +32,10 @@ name: Publish to PyPI
 # after adding a PYPI_API_TOKEN repository secret.
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:  # allow manual runs for testing
+  push:
+    tags:
+      - 'v*'
+      - '!v*-*'
 
 jobs:
   build:
