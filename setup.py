@@ -15,7 +15,7 @@ The legacy C++ sources still live in ``legacy_cpp/`` for reference.
 from setuptools import setup, find_packages
 
 setup(
-    name="creversi",
+    name="creversi-python",
     version="0.1.0",
     description="Fast pure-Python Reversi/Othello library",
     long_description=open("README.rst", encoding="utf-8").read(),
