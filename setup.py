@@ -16,7 +16,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="creversi-python",
-    version="0.1.0",
+    version="0.1.1",
     description="Fast pure-Python Reversi/Othello library",
     long_description=open("README.rst", encoding="utf-8").read(),
     long_description_content_type="text/x-rst",
