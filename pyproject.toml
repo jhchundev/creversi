@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "creversi"
+version = "0.1.0"
+description = "Fast pure-Python Reversi/Othello library"
+readme = "README.rst"
+license = { text = "GPL-3.0-only" }
+requires-python = ">=3.8"
+dependencies = ["numpy>=1.20"]
+
+[project.optional-dependencies]
+fast = ["numba>=0.55"]
+gym = ["gym"]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+exclude = ["tests*", "legacy_cpp*", "legacy_test_cpp*"]

@@ -1,36 +1,38 @@
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
-import numpy
+"""Pure-Python setup for ``creversi``.
 
-class my_build_ext(build_ext):
-    def build_extensions(self):
-        if self.compiler.compiler_type == 'unix':
-            for e in self.extensions:
-                e.extra_compile_args = ['-std=c++11', '-msse4.2', '-mbmi', '-mbmi2', '-mavx2']
-        elif self.compiler.compiler_type == 'msvc':
-            for e in self.extensions:
-                e.extra_compile_args = ['/arch:AVX2']
+This package was originally a Cython/C++ extension targeting Windows +
+AVX2. It has been migrated to a pure-Python implementation that:
 
-        build_ext.build_extensions(self)
+* requires no C/C++ compiler at install time
+* works on all Python 3.8+ platforms
+* uses NumPy for batched bitboard ops
+* optionally uses Numba (``pip install creversi[fast]``) for an
+  AVX2-class JIT speedup on the batched path
 
-ext_modules = [
-    Extension('creversi.creversi',
-        ['creversi/creversi.pyx',
-         'creversi_cpp/bit_manipulations.cpp', 'creversi_cpp/hand.cpp', 'creversi_cpp/movable_generator.cpp', 'creversi_cpp/move_generator.cpp', 'creversi_cpp/state.cpp', 'creversi_cpp/utils.cpp', 'creversi_cpp/value.cpp'],
-        language='c++',
-        include_dirs = ['creversi_cpp', numpy.get_include()]),
-    Extension('creversi.gym_reversi.envs.reversi_env',
-        ['creversi/gym_reversi/envs/reversi_env.pyx'],
-        language='c++'),
-    Extension('creversi.gym_reversi.envs.reversi_vec_env',
-        ['creversi/gym_reversi/envs/reversi_vec_env.pyx'],
-        language='c++'),
-]
+The legacy C++ sources still live in ``legacy_cpp/`` for reference.
+"""
+
+from setuptools import setup, find_packages
 
 setup(
-    name='creversi',
-    version='0.0.1',
-    packages=['creversi', 'creversi.gym_reversi', 'creversi.gym_reversi.envs'],
-    ext_modules=ext_modules,
-    cmdclass={'build_ext': my_build_ext}
+    name="creversi",
+    version="0.1.0",
+    description="Fast pure-Python Reversi/Othello library",
+    long_description=open("README.rst", encoding="utf-8").read(),
+    long_description_content_type="text/x-rst",
+    license="GPL-3.0-only",
+    packages=find_packages(exclude=("tests", "legacy_cpp", "legacy_test_cpp")),
+    python_requires=">=3.8",
+    install_requires=["numpy>=1.20"],
+    extras_require={
+        "fast": ["numba>=0.55"],
+        "gym": ["gym"],
+        "test": ["pytest"],
+    },
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Topic :: Games/Entertainment :: Board Games",
+    ],
 )
